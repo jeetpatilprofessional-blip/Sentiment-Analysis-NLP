@@ -42,3 +42,26 @@ The original experiment fitted TF-IDF on the complete dataset before splitting, 
 - Compare a transformer baseline.
 
 Educational portfolio project; not intended for high-stakes decisions.
+
+
+## Corrected training and evaluation (updated)
+
+A corrected training run was performed using a train/test split **before** fitting TF-IDF. Labels with fewer than five observations were consolidated into `Other`; this resulted in 44 classes in the model. The TF-IDF vectorizer uses 1,500 features and 1–3 grams. Four models were compared, and Linear SVC was selected by macro-F1.
+
+| Model | Test accuracy | Macro F1 |
+|---|---:|---:|
+| Logistic Regression | 38.10% | 0.017 |
+| Multinomial Naive Bayes | 37.41% | 0.012 |
+| Linear SVC | 65.99% | 0.538 |
+| Random Forest | 62.59% | 0.506 |
+
+These results are from a single stratified 80/20 split (random state 42). Because the dataset is small, noisy, and highly imbalanced, these metrics should not be interpreted as evidence of general performance on real-world text. Rare-label metrics can vary substantially between splits.
+
+The updated artifacts (`best_sentiment_model.pkl` and `tfidf_vectorizer.pkl`) were saved from this run. The Streamlit app displays decision scores for Linear SVC, not probabilities.
+
+### Run locally
+
+```bash
+pip install -r requirements.txt
+streamlit run app.py
+```
