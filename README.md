@@ -26,26 +26,7 @@ An end-to-end NLP project that explores sentiment/emotion labels in text, prepro
 7. Select the model using macro-F1 and evaluate on the held-out test set.
 8. Use the saved classifier and vectorizer in the Streamlit inference app.
 
-## Model comparison
-
-Results from the reported stratified 80/20 split (random state 42):
-
-| Model | Test accuracy | Macro F1 |
-|---|---:|---:|
-| Logistic Regression | 38.10% | 0.017 |
-| Multinomial Naive Bayes | 37.41% | 0.012 |
-| Linear SVC | 65.99% | 0.538 |
-| Random Forest | 62.59% | 0.506 |
-
-Linear SVC was selected based on macro-F1 for the reported experiment.
-
-<details>
-<summary>Evaluation caveats</summary>
-
-These scores come from a single split of a small, noisy, and highly imbalanced dataset with many labels. They should not be treated as proof of performance on general real-world text. Rare-class results can vary significantly between splits. The dataset's label quality and preprocessing choices also affect predictions.
-</details>
-
-## Streamlit app
+## Model evaluation\n\nThe original experiment results below are historical and apply to the earlier fine-grained-label setup. Run the updated training script to obtain metrics for the new three-class experiment; do not reuse the old scores as the new model's performance.\n\n## Streamlit app
 
 The app loads the saved model and TF-IDF vectorizer, accepts text input, and displays a predicted label. Where available, it displays the model's top decision scores. **Linear SVC decision scores are ranking signals, not probabilities or confidence percentages.**
 
@@ -70,7 +51,7 @@ Run the training script from the repository directory:
 python train_sentiment.py
 ```
 
-It performs the train/test split before fitting TF-IDF, compares the listed models, and saves the selected model and vectorizer to the repository directory.
+It maps emotion labels to three broad sentiment classes, removes duplicate text, performs a stratified split before fitting TF-IDF, evaluates a class-balanced Linear SVC, and saves the updated model and vectorizer to the repository directory. Upload the newly generated `.pkl` files to GitHub after running it.
 
 ## Limitations and future work
 
