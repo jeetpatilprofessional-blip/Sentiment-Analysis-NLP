@@ -1,52 +1,34 @@
 # Sentiment Analysis (NLP)
 
-An end-to-end Natural Language Processing project that explores text and sentiment labels, preprocesses text, represents it with TF-IDF features, compares classical machine-learning classifiers, and provides an interactive Streamlit demo.
+An end-to-end NLP project that explores sentiment/emotion labels in text, preprocesses text, uses TF-IDF features, compares classical machine-learning classifiers, and provides an interactive Streamlit application.
 
-## Run locally
-```bash
-pip install -r requirements.txt
-streamlit run app.py
-```
-Keep `app.py`, `best_sentiment_model.pkl`, and `tfidf_vectorizer.pkl` in the same directory.
+## Demo / Run locally
 
-## Workflow
-1. Exploratory analysis of dataset dimensions, missing values, label frequencies, and metadata.
-2. Text preprocessing: lowercase, remove HTML fragments, URLs, digits, punctuation/symbols, and normalize whitespace.
-3. Label handling: the dataset contains many distinct labels, including infrequent classes. Grouping rare labels should be documented and applied consistently.
-4. TF-IDF representation with n-gram features (configuration depends on the trained artifact).
-5. Compare Logistic Regression, Multinomial Naive Bayes, Linear SVM, and Random Forest.
-6. Evaluate on a held-out set using accuracy and per-class metrics; due to fragmented labels, accuracy alone is insufficient.
-7. Interactive inference with Streamlit.
+1. Clone or download this repository.
+2. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Keep `app.py`, `best_sentiment_model.pkl`, and `tfidf_vectorizer.pkl` in the same directory.
+4. Launch:
+   ```bash
+   streamlit run app.py
+   ```
 
-## Files
-| File | Description |
-|---|---|
-| `Analysis.ipynb` | EDA, preprocessing, model experiments, evaluation |
-| `sentimentdataset.csv` | Original dataset |
-| `cleaned_sentiment_dataset.csv` | Dataset including preprocessing output |
-| `app.py` | Streamlit inference application |
-| `best_sentiment_model.pkl` | Serialized classifier |
-| `tfidf_vectorizer.pkl` | Serialized TF-IDF vectorizer |
-| `requirements.txt` | Dependencies |
+## Project workflow
 
-## Dataset and limitations
-The dataset contains 732 rows and a large number of sentiment classes. Labels are unevenly represented, making this a fine-grained emotion/sentiment classification task rather than a simple binary classification problem. Small sample sizes, rare classes, subjective labels, and text cleaning that removes emojis/punctuation can affect generalization.
+1. Exploratory data analysis of the dataset and sentiment labels.
+2. Text preprocessing: lowercase text, remove HTML fragments and URLs, remove digits and non-letter characters, and normalize whitespace.
+3. Consolidate infrequent labels (labels with fewer than five examples are grouped as `Other` during the corrected training workflow).
+4. Split the dataset into training and test sets before fitting the TF-IDF vectorizer.
+5. Represent text using TF-IDF (up to 1,500 features and 1–3 grams in the corrected run).
+6. Compare Logistic Regression, Multinomial Naive Bayes, Linear SVC, and Random Forest.
+7. Select the model using macro-F1 and evaluate on the held-out test set.
+8. Use the saved classifier and vectorizer in the Streamlit inference app.
 
-## Reproducibility note
-The original experiment fitted TF-IDF on the complete dataset before splitting, which can leak test-set information into feature selection. For a rigorous re-evaluation, split raw texts first and fit the vectorizer only on training texts (or use a scikit-learn Pipeline). The existing model artifact has not been retrained unless the corrected workflow is run.
+## Model comparison
 
-## Next steps
-- Re-evaluate with a leakage-free pipeline.
-- Report macro-F1, per-class precision/recall, and confusion matrix.
-- Consider a documented label taxonomy and larger dataset.
-- Compare a transformer baseline.
-
-Educational portfolio project; not intended for high-stakes decisions.
-
-
-## Corrected training and evaluation (updated)
-
-A corrected training run was performed using a train/test split **before** fitting TF-IDF. Labels with fewer than five observations were consolidated into `Other`; this resulted in 44 classes in the model. The TF-IDF vectorizer uses 1,500 features and 1–3 grams. Four models were compared, and Linear SVC was selected by macro-F1.
+Results from the reported stratified 80/20 split (random state 42):
 
 | Model | Test accuracy | Macro F1 |
 |---|---:|---:|
@@ -55,13 +37,47 @@ A corrected training run was performed using a train/test split **before** fitti
 | Linear SVC | 65.99% | 0.538 |
 | Random Forest | 62.59% | 0.506 |
 
-These results are from a single stratified 80/20 split (random state 42). Because the dataset is small, noisy, and highly imbalanced, these metrics should not be interpreted as evidence of general performance on real-world text. Rare-label metrics can vary substantially between splits.
+Linear SVC was selected based on macro-F1 for the reported experiment.
 
-The updated artifacts (`best_sentiment_model.pkl` and `tfidf_vectorizer.pkl`) were saved from this run. The Streamlit app displays decision scores for Linear SVC, not probabilities.
+<details>
+<summary>Evaluation caveats</summary>
 
-### Run locally
+These scores come from a single split of a small, noisy, and highly imbalanced dataset with many labels. They should not be treated as proof of performance on general real-world text. Rare-class results can vary significantly between splits. The dataset's label quality and preprocessing choices also affect predictions.
+</details>
+
+## Streamlit app
+
+The app loads the saved model and TF-IDF vectorizer, accepts text input, and displays a predicted label. Where available, it displays the model's top decision scores. **Linear SVC decision scores are ranking signals, not probabilities or confidence percentages.**
+
+## Repository contents
+
+| File | Description |
+|---|---|
+| `Analysis.ipynb` | Exploratory analysis and model experimentation |
+| `sentimentdataset.csv` | Original dataset |
+| `cleaned_sentiment_dataset.csv` | Cleaned dataset |
+| `train_sentiment.py` | Training, comparison, evaluation, and artifact-saving script |
+| `app.py` | Streamlit inference app |
+| `best_sentiment_model.pkl` | Saved classifier |
+| `tfidf_vectorizer.pkl` | Saved TF-IDF vectorizer |
+| `requirements.txt` | Python dependencies |
+
+## Re-training
+
+Run the training script from the repository directory:
 
 ```bash
-pip install -r requirements.txt
-streamlit run app.py
+python train_sentiment.py
 ```
+
+It performs the train/test split before fitting TF-IDF, compares the listed models, and saves the selected model and vectorizer to the repository directory.
+
+## Limitations and future work
+
+- The dataset is small and labels are highly imbalanced.
+- Sentiment and emotion labels can be subjective and context-dependent.
+- The preprocessing step removes emojis and punctuation that may convey sentiment.
+- Evaluate with additional splits or cross-validation and report per-class metrics.
+- Consider a larger dataset, a more clearly defined label taxonomy, and a transformer-based baseline.
+
+Educational portfolio project; not intended for high-stakes decisions.
